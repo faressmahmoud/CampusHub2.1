@@ -11,6 +11,11 @@ A simple, distraction-free web-based planner for university students in Cairo. O
 - ✅ **Responsive Design**: Works seamlessly on desktop, tablet, and mobile
 - ✅ **Privacy-First**: All data stored locally in your browser
 
+## 🔗 GitHub Repository
+You can access the full project here:  
+https://github.com/faressmahmoud/CampusHub
+
+
 ## Tech Stack
 
 - React (no TypeScript)
