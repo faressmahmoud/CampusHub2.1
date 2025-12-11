@@ -7,7 +7,8 @@ const getBaseURL = () => {
     // If VITE_API_URL is provided, ensure it ends with /api
     return envURL.endsWith('/api') ? envURL : `${envURL.replace(/\/$/, '')}/api`;
   }
-  return 'http://localhost:5000/api';
+  // Default to Render production backend
+  return 'https://campushub2-1.onrender.com/api';
 };
 
 const api = axios.create({
