@@ -6,7 +6,7 @@ import { generateToken } from '../utils/generateToken.js';
  * @route   POST /api/auth/register
  * @access  Public
  */
-export const register = async (req, res, next) => {
+export const register = async (req, res) => {
   try {
     const { fullName, email, password, university } = req.body;
 
@@ -38,7 +38,7 @@ export const register = async (req, res, next) => {
     // Generate token
     const token = generateToken(user._id);
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       data: {
         user: {
@@ -52,7 +52,11 @@ export const register = async (req, res, next) => {
       },
     });
   } catch (error) {
-    next(error);
+    console.error('Register error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Server error during registration',
+    });
   }
 };
 
@@ -61,7 +65,7 @@ export const register = async (req, res, next) => {
  * @route   POST /api/auth/login
  * @access  Public
  */
-export const login = async (req, res, next) => {
+export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
@@ -94,7 +98,7 @@ export const login = async (req, res, next) => {
     // Generate token
     const token = generateToken(user._id);
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       data: {
         user: {
@@ -108,7 +112,11 @@ export const login = async (req, res, next) => {
       },
     });
   } catch (error) {
-    next(error);
+    console.error('Login error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Server error during login',
+    });
   }
 };
 
@@ -117,11 +125,11 @@ export const login = async (req, res, next) => {
  * @route   GET /api/auth/me
  * @access  Private
  */
-export const getMe = async (req, res, next) => {
+export const getMe = async (req, res) => {
   try {
     const user = await User.findById(req.user.id);
-    
-    res.status(200).json({
+
+    return res.status(200).json({
       success: true,
       data: {
         user: {
@@ -134,7 +142,11 @@ export const getMe = async (req, res, next) => {
       },
     });
   } catch (error) {
-    next(error);
+    console.error('GetMe error:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Server error fetching user profile',
+    });
   }
 };
 
