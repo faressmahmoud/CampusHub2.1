@@ -1,0 +1,962 @@
+{
+	"info": {
+		"_postman_id": "campus-hub-api-collection",
+		"name": "CampusHub Backend API",
+		"description": "Complete API collection for CampusHub backend. Includes authentication and all CRUD operations for Tasks, Notes, Links, and Services.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 201) {",
+									"    const response = pm.response.json();",
+									"    if (response.success && response.data.token) {",
+									"        pm.collectionVariables.set('authToken', response.data.token);",
+									"        console.log('Token saved to collection variable');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fullName\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\",\n  \"university\": \"Example University\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/register",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"register"
+							]
+						},
+						"description": "Register a new user account. The JWT token will be automatically saved to collection variables."
+					},
+					"response": []
+				},
+				{
+					"name": "Login User",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const response = pm.response.json();",
+									"    if (response.success && response.data.token) {",
+									"        pm.collectionVariables.set('authToken', response.data.token);",
+									"        console.log('Token saved to collection variable');",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/login",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"login"
+							]
+						},
+						"description": "Login with existing user credentials. The JWT token will be automatically saved to collection variables."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/me",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"auth",
+								"me"
+							]
+						},
+						"description": "Get the currently authenticated user's profile. Requires JWT token in Authorization header."
+					},
+					"response": []
+				}
+			],
+			"description": "Authentication endpoints for user registration, login, and profile retrieval."
+		},
+		{
+			"name": "Tasks",
+			"item": [
+				{
+					"name": "Get All Tasks",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks"
+							]
+						},
+						"description": "Get all tasks for the authenticated user."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Task",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "task_id_here",
+									"description": "Task ID"
+								}
+							]
+						},
+						"description": "Get a single task by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Task",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Complete Assignment 3\",\n  \"course\": \"CS101\",\n  \"dueDate\": \"2024-12-31T23:59:59.000Z\",\n  \"priority\": \"high\",\n  \"status\": \"pending\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks"
+							]
+						},
+						"description": "Create a new task. Priority: 'low', 'medium', 'high'. Status: 'pending', 'in-progress', 'completed'."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Task",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Complete Assignment 3 - Updated\",\n  \"course\": \"CS101\",\n  \"dueDate\": \"2024-12-31T23:59:59.000Z\",\n  \"priority\": \"medium\",\n  \"status\": \"in-progress\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "task_id_here",
+									"description": "Task ID"
+								}
+							]
+						},
+						"description": "Update an existing task. All fields are optional - only include fields you want to update."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Task",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/tasks/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"tasks",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "task_id_here",
+									"description": "Task ID"
+								}
+							]
+						},
+						"description": "Delete a task by ID."
+					},
+					"response": []
+				}
+			],
+			"description": "Task management endpoints. All endpoints require authentication."
+		},
+		{
+			"name": "Notes",
+			"item": [
+				{
+					"name": "Get All Notes",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/notes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"notes"
+							]
+						},
+						"description": "Get all notes for the authenticated user."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Note",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/notes/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"notes",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "note_id_here",
+									"description": "Note ID"
+								}
+							]
+						},
+						"description": "Get a single note by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Note",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Lecture Notes - Week 1\",\n  \"content\": \"Important points from today's lecture:\\n- Point 1\\n- Point 2\\n- Point 3\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notes",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"notes"
+							]
+						},
+						"description": "Create a new note. Title is required, content is optional."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Note",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Lecture Notes - Week 1 (Updated)\",\n  \"content\": \"Updated content with more details...\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/notes/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"notes",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "note_id_here",
+									"description": "Note ID"
+								}
+							]
+						},
+						"description": "Update an existing note. All fields are optional - only include fields you want to update."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Note",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/notes/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"notes",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "note_id_here",
+									"description": "Note ID"
+								}
+							]
+						},
+						"description": "Delete a note by ID."
+					},
+					"response": []
+				}
+			],
+			"description": "Note management endpoints. All endpoints require authentication."
+		},
+		{
+			"name": "Links",
+			"item": [
+				{
+					"name": "Get All Links",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/links",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"links"
+							]
+						},
+						"description": "Get all links for the authenticated user."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Link",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/links/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"links",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "link_id_here",
+									"description": "Link ID"
+								}
+							]
+						},
+						"description": "Get a single link by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Link",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Course Website\",\n  \"url\": \"https://example.com/course\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/links",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"links"
+							]
+						},
+						"description": "Create a new link. Title and URL are required. URL must be a valid URL format."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Link",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"title\": \"Course Website (Updated)\",\n  \"url\": \"https://example.com/course/updated\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/links/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"links",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "link_id_here",
+									"description": "Link ID"
+								}
+							]
+						},
+						"description": "Update an existing link. All fields are optional - only include fields you want to update."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Link",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/links/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"links",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "link_id_here",
+									"description": "Link ID"
+								}
+							]
+						},
+						"description": "Delete a link by ID."
+					},
+					"response": []
+				}
+			],
+			"description": "Link management endpoints. All endpoints require authentication."
+		},
+		{
+			"name": "Services",
+			"item": [
+				{
+					"name": "Get All Services",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/services",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"services"
+							]
+						},
+						"description": "Get all services for the authenticated user."
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Service",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/services/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"services",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "service_id_here",
+									"description": "Service ID"
+								}
+							]
+						},
+						"description": "Get a single service by ID."
+					},
+					"response": []
+				},
+				{
+					"name": "Create Service",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Library Access Card Request\",\n  \"description\": \"Request a new library access card\",\n  \"category\": \"facilities\",\n  \"priority\": \"medium\",\n  \"status\": \"pending\",\n  \"contactEmail\": \"library@university.edu\",\n  \"notes\": \"Need access for research project\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/services",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"services"
+							]
+						},
+						"description": "Create a new service request. Category: 'academic', 'administrative', 'facilities', 'support', 'other'. Status: 'pending', 'in-progress', 'resolved', 'cancelled'. Priority: 'low', 'medium', 'high'."
+					},
+					"response": []
+				},
+				{
+					"name": "Update Service",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Library Access Card Request (Updated)\",\n  \"status\": \"in-progress\",\n  \"notes\": \"Processing request...\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/services/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"services",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "service_id_here",
+									"description": "Service ID"
+								}
+							]
+						},
+						"description": "Update an existing service. All fields are optional - only include fields you want to update."
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Service",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{authToken}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/api/services/:id",
+							"host": [
+								"{{baseUrl}}"
+							],
+							"path": [
+								"api",
+								"services",
+								":id"
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "service_id_here",
+									"description": "Service ID"
+								}
+							]
+						},
+						"description": "Delete a service by ID."
+					},
+					"response": []
+				}
+			],
+			"description": "Service management endpoints. All endpoints require authentication."
+		},
+		{
+			"name": "Health Check",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{baseUrl}}/api/health",
+					"host": [
+						"{{baseUrl}}"
+					],
+					"path": [
+						"api",
+						"health"
+					]
+				},
+				"description": "Health check endpoint to verify the API is running. No authentication required."
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "authToken",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
+
