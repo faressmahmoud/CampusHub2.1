@@ -5,6 +5,7 @@ import User from '../models/User.js';
 import Task from '../models/Task.js';
 import Note from '../models/Note.js';
 import Link from '../models/Link.js';
+import Service from '../models/Service.js';
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ const seedData = async () => {
     await Task.deleteMany({});
     await Note.deleteMany({});
     await Link.deleteMany({});
+    await Service.deleteMany({});
 
     console.log('Cleared existing data...');
 
@@ -106,6 +108,42 @@ const seedData = async () => {
     ]);
 
     console.log(`Created ${links.length} links`);
+
+    // Create sample services
+    const services = await Service.create([
+      {
+        user: demoUser._id,
+        name: 'Library Access Request',
+        description: 'Request access to restricted library resources',
+        category: 'academic',
+        status: 'pending',
+        priority: 'medium',
+        contactEmail: 'library@cu.edu.eg',
+        notes: 'Need access for research project',
+      },
+      {
+        user: demoUser._id,
+        name: 'Dormitory Maintenance',
+        description: 'AC unit not working in room 204',
+        category: 'facilities',
+        status: 'in-progress',
+        priority: 'high',
+        contactEmail: 'facilities@cu.edu.eg',
+        notes: 'Reported on Monday, waiting for technician',
+      },
+      {
+        user: demoUser._id,
+        name: 'Transcript Request',
+        description: 'Official transcript for graduate school application',
+        category: 'administrative',
+        status: 'resolved',
+        priority: 'high',
+        contactEmail: 'registrar@cu.edu.eg',
+        notes: 'Completed and sent',
+      },
+    ]);
+
+    console.log(`Created ${services.length} services`);
 
     console.log('\n✅ Seed data created successfully!');
     console.log('\nDemo credentials:');

@@ -23,7 +23,7 @@ const AboutPage = () => {
             <li><strong>Notes & Links:</strong> Keep quick notes and save important links for easy access.</li>
             <li><strong>Dashboard Overview:</strong> Get a quick view of your academic progress and upcoming deadlines.</li>
             <li><strong>User-Friendly:</strong> Clean, simple interface that works seamlessly on desktop, tablet, and mobile devices.</li>
-            <li><strong>Privacy-First:</strong> All your data is stored locally in your browser - no backend, no servers, complete privacy.</li>
+            <li><strong>Secure & Reliable:</strong> Your data is securely stored in MongoDB with JWT authentication for complete privacy and security.</li>
           </ul>
         </section>
 
@@ -41,9 +41,9 @@ const AboutPage = () => {
         <section>
           <h2 className="text-2xl font-semibold text-gray-800 mb-3">Technology</h2>
           <p className="leading-relaxed">
-            CampusHub is built with modern web technologies including React, React Router, 
-            and Tailwind CSS. All data is stored locally in your browser using localStorage, 
-            ensuring your information stays private and secure.
+            CampusHub is built with modern full-stack technologies including React, Node.js, Express, 
+            MongoDB, and Tailwind CSS. The application uses JWT authentication and RESTful APIs 
+            to ensure your information stays private and secure.
           </p>
         </section>
 

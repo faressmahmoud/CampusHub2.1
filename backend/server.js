@@ -10,6 +10,7 @@ import authRoutes from './routes/authRoutes.js';
 import taskRoutes from './routes/taskRoutes.js';
 import noteRoutes from './routes/noteRoutes.js';
 import linkRoutes from './routes/linkRoutes.js';
+import serviceRoutes from './routes/serviceRoutes.js';
 
 // Load environment variables
 dotenv.config();
@@ -55,6 +56,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/notes', noteRoutes);
 app.use('/api/links', linkRoutes);
+app.use('/api/services', serviceRoutes);
 
 // 404 handler
 app.use((req, res) => {
