@@ -1,6 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useState } from 'react';
-import { clearCurrentUser, getCurrentUser } from '../utils/auth';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * Navbar component - navigation bar with logout functionality
@@ -8,11 +8,11 @@ import { clearCurrentUser, getCurrentUser } from '../utils/auth';
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const currentUser = getCurrentUser();
+  const { user, logout } = useAuth();
 
   // Handle logout
   const handleLogout = () => {
-    clearCurrentUser();
+    logout();
     navigate('/login');
   };
 

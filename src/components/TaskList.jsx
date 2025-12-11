@@ -29,11 +29,22 @@ const TaskList = ({ tasks, onUpdate, onDelete, onEdit }) => {
 
   // Handle status change
   const handleStatusChange = (taskId, newStatus) => {
-    const task = tasks.find(t => t.id === taskId);
-    if (task) {
+    const task = tasks.find(t => (t._id || t.id) === taskId);
+    if (task && task.status !== 'completed') { // Prevent changing status of completed tasks
       onUpdate({
         ...task,
         status: newStatus,
+        updatedAt: new Date().toISOString(),
+      });
+    }
+  };
+
+  // Handle reopen task
+  const handleReopen = (task) => {
+    if (task.status === 'completed') {
+      onUpdate({
+        ...task,
+        status: 'pending', // Reset to pending when reopened
         updatedAt: new Date().toISOString(),
       });
     }
@@ -132,7 +143,7 @@ const TaskList = ({ tasks, onUpdate, onDelete, onEdit }) => {
         <div className="space-y-4">
           {sortedTasks.map((task) => (
             <div
-              key={task.id}
+              key={task._id || task.id}
               className={`border rounded-lg p-4 ${
                 isOverdue(task.dueDate, task.status)
                   ? 'border-red-400 bg-red-50'
@@ -180,30 +191,52 @@ const TaskList = ({ tasks, onUpdate, onDelete, onEdit }) => {
                 </div>
 
                 <div className="flex flex-col space-y-2 ml-4">
-                  <select
-                    value={task.status}
-                    onChange={(e) => handleStatusChange(task.id, e.target.value)}
-                    className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
-                  >
-                    <option value="pending">Pending</option>
-                    <option value="in-progress">In Progress</option>
-                    <option value="completed">Completed</option>
-                  </select>
-                  
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => onEdit(task)}
-                      className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => onDelete(task.id)}
-                      className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition"
-                    >
-                      Delete
-                    </button>
-                  </div>
+                  {task.status === 'completed' ? (
+                    <>
+                      <div className="px-3 py-1 bg-green-100 text-green-700 rounded text-sm font-medium text-center border border-green-300">
+                        Completed
+                      </div>
+                      <button
+                        onClick={() => handleReopen(task)}
+                        className="px-3 py-1 bg-green-600 text-white rounded text-sm hover:bg-green-700 transition font-medium"
+                      >
+                        Reopen Task
+                      </button>
+                      <button
+                        onClick={() => onDelete(task._id || task.id)}
+                        className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition"
+                      >
+                        Delete
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <select
+                        value={task.status}
+                        onChange={(e) => handleStatusChange(task._id || task.id, e.target.value)}
+                        className="px-3 py-1 border border-gray-300 rounded text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="in-progress">In Progress</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                      
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => onEdit(task)}
+                          className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => onDelete(task._id || task.id)}
+                          className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
             </div>

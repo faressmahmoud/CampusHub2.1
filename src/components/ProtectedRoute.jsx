@@ -1,13 +1,21 @@
 import { Navigate } from 'react-router-dom';
-import { getCurrentUser } from '../utils/auth';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * ProtectedRoute component - redirects to login if user is not authenticated
  */
 const ProtectedRoute = ({ children }) => {
-  const currentUser = getCurrentUser();
+  const { isAuthenticated, loading } = useAuth();
   
-  if (!currentUser) {
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+  
+  if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
   

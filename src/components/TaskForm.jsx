@@ -13,8 +13,13 @@ const TaskForm = ({ onSubmit, initialData = null, onCancel }) => {
   });
   const [error, setError] = useState('');
 
+  // Check if task is completed (non-editable)
+  const isCompleted = initialData?.status === 'completed';
+  const isDisabled = isCompleted;
+
   // Handle input changes
   const handleChange = (e) => {
+    if (isDisabled) return; // Prevent changes when completed
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
@@ -48,9 +53,6 @@ const TaskForm = ({ onSubmit, initialData = null, onCancel }) => {
 
     const taskData = {
       ...formData,
-      id: initialData?.id || Date.now().toString(),
-      createdAt: initialData?.createdAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     };
 
     onSubmit(taskData);
@@ -67,11 +69,36 @@ const TaskForm = ({ onSubmit, initialData = null, onCancel }) => {
     }
   };
 
+  // Handle reopen task
+  const handleReopen = (e) => {
+    e.preventDefault();
+    if (onSubmit && initialData) {
+      const reopenedTask = {
+        ...initialData,
+        status: 'pending', // Reset to pending when reopened
+      };
+      onSubmit(reopenedTask);
+    }
+  };
+
   return (
     <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">
-        {initialData ? 'Edit Task' : 'Add New Task'}
-      </h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-2xl font-bold text-gray-800">
+          {initialData ? (isCompleted ? 'Completed Task' : 'Edit Task') : 'Add New Task'}
+        </h2>
+        {isCompleted && (
+          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-sm font-medium">
+            ✓ Completed
+          </span>
+        )}
+      </div>
+      
+      {isCompleted && (
+        <div className="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded mb-4">
+          <p className="text-sm">This task is completed and cannot be edited. Use "Reopen Task" to make changes.</p>
+        </div>
+      )}
       
       <form onSubmit={handleSubmit} className="space-y-4">
         {error && (
@@ -90,7 +117,10 @@ const TaskForm = ({ onSubmit, initialData = null, onCancel }) => {
             name="title"
             value={formData.title}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            disabled={isDisabled}
+            className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
+              isDisabled ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''
+            }`}
             placeholder="e.g., Complete Math Assignment"
           />
         </div>
@@ -105,7 +135,10 @@ const TaskForm = ({ onSubmit, initialData = null, onCancel }) => {
             name="course"
             value={formData.course}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            disabled={isDisabled}
+            className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
+              isDisabled ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''
+            }`}
             placeholder="e.g., CS101"
           />
         </div>
@@ -120,7 +153,10 @@ const TaskForm = ({ onSubmit, initialData = null, onCancel }) => {
             name="dueDate"
             value={formData.dueDate}
             onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+            disabled={isDisabled}
+            className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
+              isDisabled ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''
+            }`}
           />
         </div>
 
@@ -134,7 +170,10 @@ const TaskForm = ({ onSubmit, initialData = null, onCancel }) => {
               name="priority"
               value={formData.priority}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              disabled={isDisabled}
+              className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
+                isDisabled ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''
+              }`}
             >
               <option value="low">Low</option>
               <option value="medium">Medium</option>
@@ -151,7 +190,10 @@ const TaskForm = ({ onSubmit, initialData = null, onCancel }) => {
               name="status"
               value={formData.status}
               onChange={handleChange}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+              disabled={isDisabled}
+              className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none ${
+                isDisabled ? 'bg-gray-100 cursor-not-allowed opacity-60' : ''
+              }`}
             >
               <option value="pending">Pending</option>
               <option value="in-progress">In Progress</option>
@@ -161,20 +203,35 @@ const TaskForm = ({ onSubmit, initialData = null, onCancel }) => {
         </div>
 
         <div className="flex space-x-3">
-          <button
-            type="submit"
-            className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-          >
-            {initialData ? 'Update Task' : 'Add Task'}
-          </button>
-          {initialData && onCancel && (
+          {isCompleted ? (
             <button
               type="button"
-              onClick={onCancel}
-              className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-400 transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+              onClick={handleReopen}
+              className="flex-1 bg-green-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-green-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2"
             >
-              Cancel
+              Reopen Task
             </button>
+          ) : (
+            <>
+              <button
+                type="submit"
+                disabled={isDisabled}
+                className={`flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+                  isDisabled ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              >
+                {initialData ? 'Update Task' : 'Add Task'}
+              </button>
+              {initialData && onCancel && (
+                <button
+                  type="button"
+                  onClick={onCancel}
+                  className="flex-1 bg-gray-300 text-gray-700 py-2 px-4 rounded-lg font-medium hover:bg-gray-400 transition duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2"
+                >
+                  Cancel
+                </button>
+              )}
+            </>
           )}
         </div>
       </form>

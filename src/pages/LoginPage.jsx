@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { authenticateUser, setCurrentUser } from '../utils/auth';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * LoginPage component - handles user authentication
@@ -11,7 +11,9 @@ const LoginPage = () => {
     password: '',
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
 
   // Handle input changes
   const handleChange = (e) => {
@@ -45,24 +47,26 @@ const LoginPage = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     if (!validateForm()) {
+      setLoading(false);
       return;
     }
 
-    // Authenticate user
-    const user = authenticateUser(formData.email, formData.password);
+    // Authenticate user via API
+    const result = await login(formData.email, formData.password);
     
-    if (user) {
-      // Set current user and redirect to dashboard
-      setCurrentUser(user);
+    if (result.success) {
       navigate('/dashboard');
     } else {
-      setError('Invalid email or password. Please try again or register a new account.');
+      setError(result.message || 'Invalid email or password. Please try again or register a new account.');
     }
+    
+    setLoading(false);
   };
 
   return (
@@ -130,9 +134,10 @@ const LoginPage = () => {
 
           <button
             type="submit"
-            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Login
+            {loading ? 'Logging in...' : 'Login'}
           </button>
         </form>
 

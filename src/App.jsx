@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Layout from './components/Layout';
 import LoginPage from './pages/LoginPage';
@@ -8,19 +8,14 @@ import Dashboard from './pages/Dashboard';
 import TasksPage from './pages/TasksPage';
 import NotesPage from './pages/NotesPage';
 import AboutPage from './pages/AboutPage';
-import { initializePlaceholderData } from './utils/placeholderData';
 
 /**
  * Main App component with routing
  */
 function App() {
-  // Initialize placeholder data on first load
-  useEffect(() => {
-    initializePlaceholderData();
-  }, []);
-
   return (
-    <Router>
+    <AuthProvider>
+      <Router>
       <Routes>
         {/* Public routes */}
         <Route path="/login" element={<LoginPage />} />
@@ -73,6 +68,7 @@ function App() {
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
     </Router>
+    </AuthProvider>
   );
 }
 

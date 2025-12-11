@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
-import { getCurrentUser, getUserData, saveUserData } from '../utils/auth';
+import { useAuth } from '../context/AuthContext';
+import { getNotes, createNote, updateNote, deleteNote } from '../api/notes';
+import { getLinks, createLink, updateLink, deleteLink } from '../api/links';
 
 /**
  * NotesPage component - manage notes and links
@@ -10,38 +12,37 @@ const NotesPage = () => {
   const [links, setLinks] = useState([]);
   const [editingNote, setEditingNote] = useState(null);
   const [editingLink, setEditingLink] = useState(null);
-  const [currentUser, setCurrentUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   // Form states
   const [noteForm, setNoteForm] = useState({ title: '', content: '' });
   const [linkForm, setLinkForm] = useState({ title: '', url: '' });
   const [error, setError] = useState('');
 
+  const { user } = useAuth();
+
   useEffect(() => {
-    const user = getCurrentUser();
-    if (user) {
-      setCurrentUser(user);
-      // Load user-specific data
-      const userNotes = getUserData('notes', user.email);
-      const userLinks = getUserData('links', user.email);
-      setNotes(userNotes);
-      setLinks(userLinks);
-    }
+    loadData();
   }, []);
 
-  // Save notes to localStorage
-  const saveNotes = (newNotes) => {
-    if (currentUser) {
-      saveUserData('notes', currentUser.email, newNotes);
-      setNotes(newNotes);
-    }
-  };
-
-  // Save links to localStorage
-  const saveLinks = (newLinks) => {
-    if (currentUser) {
-      saveUserData('links', currentUser.email, newLinks);
-      setLinks(newLinks);
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [notesResponse, linksResponse] = await Promise.all([
+        getNotes(),
+        getLinks(),
+      ]);
+      if (notesResponse.success) {
+        setNotes(notesResponse.data);
+      }
+      if (linksResponse.success) {
+        setLinks(linksResponse.data);
+      }
+    } catch (err) {
+      setError('Failed to load data. Please try again.');
+      console.error('Error loading data:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -56,7 +57,7 @@ const NotesPage = () => {
   };
 
   // Handle note submission
-  const handleNoteSubmit = (e) => {
+  const handleNoteSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -65,31 +66,32 @@ const NotesPage = () => {
       return;
     }
 
-    if (editingNote) {
-      // Update existing note
-      const updatedNotes = notes.map(note =>
-        note.id === editingNote.id
-          ? { ...note, ...noteForm, updatedAt: new Date().toISOString() }
-          : note
-      );
-      saveNotes(updatedNotes);
-      setEditingNote(null);
-    } else {
-      // Add new note
-      const newNote = {
-        id: Date.now().toString(),
-        ...noteForm,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      saveNotes([...notes, newNote]);
+    try {
+      if (editingNote) {
+        // Update existing note
+        const response = await updateNote(editingNote._id || editingNote.id, noteForm);
+        if (response.success) {
+          setNotes(notes.map(note => 
+            (note._id || note.id) === (editingNote._id || editingNote.id) ? response.data : note
+          ));
+          setEditingNote(null);
+        }
+      } else {
+        // Add new note
+        const response = await createNote(noteForm);
+        if (response.success) {
+          setNotes([...notes, response.data]);
+        }
+      }
+      setNoteForm({ title: '', content: '' });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to save note. Please try again.');
+      console.error('Error saving note:', err);
     }
-
-    setNoteForm({ title: '', content: '' });
   };
 
   // Handle link submission
-  const handleLinkSubmit = (e) => {
+  const handleLinkSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
@@ -114,50 +116,64 @@ const NotesPage = () => {
       return;
     }
 
-    if (editingLink) {
-      // Update existing link
-      const updatedLinks = links.map(link =>
-        link.id === editingLink.id
-          ? { ...link, title: linkForm.title, url, updatedAt: new Date().toISOString() }
-          : link
-      );
-      saveLinks(updatedLinks);
-      setEditingLink(null);
-    } else {
-      // Add new link
-      const newLink = {
-        id: Date.now().toString(),
-        title: linkForm.title,
-        url,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-      saveLinks([...links, newLink]);
+    try {
+      if (editingLink) {
+        // Update existing link
+        const response = await updateLink(editingLink._id || editingLink.id, { title: linkForm.title, url });
+        if (response.success) {
+          setLinks(links.map(link => 
+            (link._id || link.id) === (editingLink._id || editingLink.id) ? response.data : link
+          ));
+          setEditingLink(null);
+        }
+      } else {
+        // Add new link
+        const response = await createLink({ title: linkForm.title, url });
+        if (response.success) {
+          setLinks([...links, response.data]);
+        }
+      }
+      setLinkForm({ title: '', url: '' });
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to save link. Please try again.');
+      console.error('Error saving link:', err);
     }
-
-    setLinkForm({ title: '', url: '' });
   };
 
   // Handle note delete
-  const handleNoteDelete = (noteId) => {
+  const handleNoteDelete = async (noteId) => {
     if (window.confirm('Are you sure you want to delete this note?')) {
-      const updatedNotes = notes.filter(note => note.id !== noteId);
-      saveNotes(updatedNotes);
-      if (editingNote && editingNote.id === noteId) {
-        setEditingNote(null);
-        setNoteForm({ title: '', content: '' });
+      try {
+        const response = await deleteNote(noteId);
+        if (response.success) {
+          setNotes(notes.filter(note => (note._id || note.id) !== noteId));
+          if (editingNote && (editingNote._id || editingNote.id) === noteId) {
+            setEditingNote(null);
+            setNoteForm({ title: '', content: '' });
+          }
+        }
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to delete note. Please try again.');
+        console.error('Error deleting note:', err);
       }
     }
   };
 
   // Handle link delete
-  const handleLinkDelete = (linkId) => {
+  const handleLinkDelete = async (linkId) => {
     if (window.confirm('Are you sure you want to delete this link?')) {
-      const updatedLinks = links.filter(link => link.id !== linkId);
-      saveLinks(updatedLinks);
-      if (editingLink && editingLink.id === linkId) {
-        setEditingLink(null);
-        setLinkForm({ title: '', url: '' });
+      try {
+        const response = await deleteLink(linkId);
+        if (response.success) {
+          setLinks(links.filter(link => (link._id || link.id) !== linkId));
+          if (editingLink && (editingLink._id || editingLink.id) === linkId) {
+            setEditingLink(null);
+            setLinkForm({ title: '', url: '' });
+          }
+        }
+      } catch (err) {
+        setError(err.response?.data?.message || 'Failed to delete link. Please try again.');
+        console.error('Error deleting link:', err);
       }
     }
   };
@@ -188,8 +204,21 @@ const NotesPage = () => {
     setError('');
   };
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-gray-600">Loading...</div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          {error}
+        </div>
+      )}
       {/* Tabs */}
       <div className="bg-white rounded-lg shadow-md p-4">
         <div className="flex space-x-4 border-b border-gray-200">
@@ -288,7 +317,7 @@ const NotesPage = () => {
             {notes.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {notes.map((note) => (
-                  <div key={note.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                  <div key={note._id || note.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
                     <div className="flex items-start justify-between mb-2">
                       <h3 className="text-lg font-semibold text-gray-800">{note.title}</h3>
                       <div className="flex space-x-2">
@@ -299,7 +328,7 @@ const NotesPage = () => {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleNoteDelete(note.id)}
+                          onClick={() => handleNoteDelete(note._id || note.id)}
                           className="text-red-600 hover:text-red-700 text-sm"
                         >
                           Delete
@@ -386,7 +415,7 @@ const NotesPage = () => {
             {links.length > 0 ? (
               <div className="space-y-3">
                 {links.map((link) => (
-                  <div key={link.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                  <div key={link._id || link.id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
                     <div className="flex items-center justify-between">
                       <div className="flex-1">
                         <h3 className="text-lg font-semibold text-gray-800 mb-1">{link.title}</h3>
@@ -410,7 +439,7 @@ const NotesPage = () => {
                           Edit
                         </button>
                         <button
-                          onClick={() => handleLinkDelete(link.id)}
+                          onClick={() => handleLinkDelete(link._id || link.id)}
                           className="px-3 py-1 bg-red-600 text-white rounded text-sm hover:bg-red-700 transition"
                         >
                           Delete

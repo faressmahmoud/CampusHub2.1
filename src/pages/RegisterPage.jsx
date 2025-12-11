@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { registerUser } from '../utils/auth';
+import { useAuth } from '../context/AuthContext';
 
 /**
  * RegisterPage component - handles new user registration
@@ -15,7 +15,9 @@ const RegisterPage = () => {
   });
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const { register } = useAuth();
 
   // Cairo universities list
   const universities = [
@@ -80,11 +82,13 @@ const RegisterPage = () => {
   };
 
   // Handle form submission
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     if (!validateForm()) {
+      setLoading(false);
       return;
     }
 
@@ -96,18 +100,20 @@ const RegisterPage = () => {
       university: formData.university === 'Other' ? formData.otherUniversity : formData.university,
     };
 
-    // Register user
-    const success = registerUser(userData);
+    // Register user via API
+    const result = await register(userData);
     
-    if (success) {
+    if (result.success) {
       setSuccess(true);
-      // Redirect to login after 2 seconds
+      // Redirect to dashboard after 1 second
       setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+        navigate('/dashboard');
+      }, 1000);
     } else {
-      setError('An account with this email already exists. Please login instead.');
+      setError(result.message || 'An account with this email already exists. Please login instead.');
     }
+    
+    setLoading(false);
   };
 
   return (
@@ -216,9 +222,10 @@ const RegisterPage = () => {
 
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              disabled={loading}
+              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Register
+              {loading ? 'Registering...' : 'Register'}
             </button>
           </form>
         )}

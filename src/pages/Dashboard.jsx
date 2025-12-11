@@ -1,30 +1,47 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getCurrentUser, getUserData } from '../utils/auth';
+import { useAuth } from '../context/AuthContext';
+import { getTasks } from '../api/tasks';
+import { getNotes } from '../api/notes';
+import { getLinks } from '../api/links';
 
 /**
  * Dashboard component - overview of tasks, notes, and links
  */
 const Dashboard = () => {
-  const [currentUser, setCurrentUser] = useState(null);
   const [tasks, setTasks] = useState([]);
   const [notes, setNotes] = useState([]);
   const [links, setLinks] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
   useEffect(() => {
-    const user = getCurrentUser();
-    if (user) {
-      setCurrentUser(user);
-      // Load user-specific data
-      const userTasks = getUserData('tasks', user.email);
-      const userNotes = getUserData('notes', user.email);
-      const userLinks = getUserData('links', user.email);
-      
-      setTasks(userTasks);
-      setNotes(userNotes);
-      setLinks(userLinks);
-    }
+    loadData();
   }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [tasksResponse, notesResponse, linksResponse] = await Promise.all([
+        getTasks(),
+        getNotes(),
+        getLinks(),
+      ]);
+      if (tasksResponse.success) {
+        setTasks(tasksResponse.data);
+      }
+      if (notesResponse.success) {
+        setNotes(notesResponse.data);
+      }
+      if (linksResponse.success) {
+        setLinks(linksResponse.data);
+      }
+    } catch (err) {
+      console.error('Error loading dashboard data:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Calculate task statistics
   const totalTasks = tasks.length;
@@ -45,7 +62,15 @@ const Dashboard = () => {
     .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
     .slice(0, 5);
 
-  if (!currentUser) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <div className="text-gray-600">Loading dashboard...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
     return null;
   }
 
@@ -54,10 +79,10 @@ const Dashboard = () => {
       {/* Welcome Section */}
       <div className="bg-white rounded-lg shadow-md p-6">
         <h1 className="text-3xl font-bold text-gray-800 mb-2">
-          Welcome back, {currentUser.fullName}! 👋
+          Welcome back, {user.fullName}! 👋
         </h1>
         <p className="text-gray-600">
-          {currentUser.university} • Here's your academic overview
+          {user.university} • Here's your academic overview
         </p>
       </div>
 
@@ -136,7 +161,7 @@ const Dashboard = () => {
           {upcomingTasks.length > 0 ? (
             <ul className="space-y-3">
               {upcomingTasks.map((task) => (
-                <li key={task.id} className="border-l-4 border-blue-500 pl-4 py-2">
+                <li key={task._id || task.id} className="border-l-4 border-blue-500 pl-4 py-2">
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="font-medium text-gray-800">{task.title}</p>
