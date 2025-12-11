@@ -1,9 +1,32 @@
 import axios from "axios";
 
-// Use VITE_API_URL exactly as provided, without adding /api again
-const baseURL =
-  import.meta.env.VITE_API_URL ||
-  "https://campushub2-1.onrender.com/api"; // fallback
+// Ensure baseURL always ends with /api and is never empty
+const getBaseURL = () => {
+  const envURL = import.meta.env.VITE_API_URL;
+  
+  // If VITE_API_URL is provided, ensure it ends with /api
+  if (envURL) {
+    const trimmed = envURL.trim();
+    if (trimmed) {
+      // Remove trailing slash, then ensure /api is present
+      const withoutTrailing = trimmed.replace(/\/$/, '');
+      return withoutTrailing.endsWith('/api') 
+        ? withoutTrailing 
+        : `${withoutTrailing}/api`;
+    }
+  }
+  
+  // Default to Render production backend - ALWAYS use this if env is not set
+  return "https://campushub2-1.onrender.com/api";
+};
+
+const baseURL = getBaseURL();
+
+// Validate baseURL is set (defensive check)
+if (!baseURL || !baseURL.startsWith('http')) {
+  console.error('Invalid baseURL:', baseURL);
+  throw new Error('API baseURL must be a valid HTTP/HTTPS URL');
+}
 
 const api = axios.create({
   baseURL,

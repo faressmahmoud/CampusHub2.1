@@ -14,8 +14,12 @@ export const register = async (userData) => {
 
 /**
  * Login user
+ * @route POST /api/auth/login
+ * Final URL: baseURL + '/auth/login' = https://campushub2-1.onrender.com/api/auth/login
  */
 export const login = async (email, password) => {
+  // CRITICAL: Path must start with '/' to be absolute, not relative
+  // This ensures it combines with baseURL correctly
   const response = await api.post('/auth/login', { email, password }, {
     headers: {
       'Content-Type': 'application/json',
