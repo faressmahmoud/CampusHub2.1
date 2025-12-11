@@ -14,7 +14,7 @@ A full-stack web-based planner for university students. Organize your daily acad
 
 ## 🔗 GitHub Repository
 You can access the full project here:  
-https://github.com/faressmahmoud/CampusHub
+https://github.com/faressmahmoud/CampusHub2.1
 
 ## Tech Stack
 
